@@ -48,3 +48,13 @@
     -fx-background-radius: 3;
     -fx-background-color: #1C86EE;
 }
+
+.messageBoxBackgroundOther {
+    -fx-background-radius: 3;
+    -fx-background-color: #ffa600;
+}
+
+.messageBoxBackgroundSystem {
+    -fx-background-radius: 3;
+    -fx-background-color: #dbdbdb;
+}
