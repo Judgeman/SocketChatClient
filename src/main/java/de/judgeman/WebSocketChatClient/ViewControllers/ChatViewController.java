@@ -12,6 +12,7 @@ import de.judgeman.WebSocketChatClient.ViewControllers.Other.MessageLayoutViewCo
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
@@ -47,12 +48,33 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     private Button disconnectButton;
     @FXML
     private VBox messageVBox;
+    @FXML
+    private ChoiceBox<ReconnectionTime> reconnectChoiceBox;
+
+    @FXML
+    private void initialize() {
+        initReconnectionChoiceBox();
+    }
+
+    private void initReconnectionChoiceBox() {
+        ReconnectionTime off = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnectOff"), -1);
+        ReconnectionTime oneSecond = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect1Sec"), 1);
+        ReconnectionTime fiveSeconds = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect5Sec"), 5);
+        ReconnectionTime tenSeconds = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect10Sec"), 10);
+
+        reconnectChoiceBox.getItems().add(off);
+        reconnectChoiceBox.getItems().add(oneSecond);
+        reconnectChoiceBox.getItems().add(fiveSeconds);
+        reconnectChoiceBox.getItems().add(tenSeconds);
+
+        reconnectChoiceBox.setValue(off);
+    }
 
     @FXML
     private void connect() {
         if (session != null) {
             logger.info("Already connected");
-            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),languageService.getLocalizationText("connectionAlreadyExists"));
+            showSystemMessage(languageService.getLocalizationText("connectionAlreadyExists"));
             return;
         }
 
@@ -60,7 +82,8 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         String nameOfFriend = nameOfFriendTextField.getText();
 
         if (name.isEmpty() || nameOfFriend.isEmpty()) {
-            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),languageService.getLocalizationText("textFieldsMustBeFilledOut"));
+            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),
+                                              languageService.getLocalizationText("textFieldsMustBeFilledOut"));
             return;
         }
 
@@ -72,10 +95,10 @@ public class ChatViewController extends ViewController implements WebSocketRespo
 
         if (session != null && session.isConnected()) {
             changeConnectionControls(false);
-            clearChat();
         }
     }
 
+    @FXML
     private void clearChat() {
         messageVBox.getChildren().clear();
     }
@@ -128,6 +151,29 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     public void handleError(Throwable throwable) {
         showSystemMessage(String.format(languageService.getLocalizationText("errorWithDetails"), throwable.getMessage()));
         disconnect();
+
+        tryToReconnect();
+    }
+
+    private void tryToReconnect() {
+        int secondsToReconnect = reconnectChoiceBox.getValue().value;
+        if (secondsToReconnect < 0) {
+            logger.info("Auto reconnection is off");
+            return;
+        }
+
+        showSystemMessage(String.format(languageService.getLocalizationText("chatViewReconnectIn"), secondsToReconnect));
+        logger.info("Reconnect in seconds: " + secondsToReconnect);
+        Thread reconnectThread = new Thread(() -> {
+            try {
+                Thread.sleep(1000L * secondsToReconnect);
+                showSystemMessage(languageService.getLocalizationText("chatViewReconnectTry"));
+                connect();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        reconnectThread.start();
     }
 
     private void showSystemMessage(String messageText) {
@@ -159,7 +205,8 @@ public class ChatViewController extends ViewController implements WebSocketRespo
 
     private boolean sendMessage(StompSession session) {
         if (session == null) {
-            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),languageService.getLocalizationText("noActiveConnection"));
+            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),
+                                              languageService.getLocalizationText("noActiveConnection"));
             logger.info("session is null");
             return false;
         }
@@ -177,5 +224,36 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         }
 
         return false;
+    }
+
+    private class ReconnectionTime {
+        private String displayText;
+        private int value = -1;
+
+        public ReconnectionTime(String displayText, int value) {
+            this.displayText = displayText;
+            this.value = value;
+        }
+
+        public String getDisplayText() {
+            return displayText;
+        }
+
+        public void setDisplayText(String displayText) {
+            this.displayText = displayText;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return displayText;
+        }
     }
 }

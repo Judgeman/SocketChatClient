@@ -7,6 +7,7 @@ import de.judgeman.WebSocketChatClient.ViewControllers.DialogControllers.Informa
 import de.judgeman.WebSocketChatClient.ViewControllers.MainViewController;
 import javafx.animation.FadeTransition;
 import javafx.animation.SequentialTransition;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -111,53 +112,61 @@ public class ViewService {
         InformationDialogController informationDialogController = ((InformationDialogController) viewRootAndControllerPair.getViewController());
         informationDialogController.setCallBack(callBack);
 
-        informationDialogController.setTitle(title);
-        informationDialogController.setInformation(information);
+        Platform.runLater(() -> {
+            informationDialogController.setTitle(title);
+            informationDialogController.setInformation(information);
+        });
 
         showDialog(viewRootAndControllerPair.getRoot());
         return viewRootAndControllerPair;
     }
 
     private void showDialog(Parent dialogRoot) {
-        FadeTransition dialogBackgroundFadeInTransition = animationService.createFadeInTransition(mainViewController.getDialogOverLayer());
-        FadeTransition dialogRootFadeInTransition = animationService.createFadeInTransition(mainViewController.getGlassPane());
-        SequentialTransition bounceTransition = animationService.createBounceInTransition(dialogRoot);
+        Platform.runLater(() -> {
+            FadeTransition dialogBackgroundFadeInTransition = animationService.createFadeInTransition(mainViewController.getDialogOverLayer());
+            FadeTransition dialogRootFadeInTransition = animationService.createFadeInTransition(mainViewController.getGlassPane());
+            SequentialTransition bounceTransition = animationService.createBounceInTransition(dialogRoot);
 
-        mainViewController.getDialogOverLayer().setVisible(true);
-        mainViewController.getGlassPane().setVisible(true);
+            mainViewController.getDialogOverLayer().setVisible(true);
+            mainViewController.getGlassPane().setVisible(true);
 
-        mainViewController.getGlassPane().getChildren().add(dialogRoot);
+            mainViewController.getGlassPane().getChildren().add(dialogRoot);
 
-        dialogBackgroundFadeInTransition.play();
-        dialogRootFadeInTransition.play();
-        bounceTransition.play();
+            dialogBackgroundFadeInTransition.play();
+            dialogRootFadeInTransition.play();
+            bounceTransition.play();
+        });
     }
 
     public void dismissDialog(CallBack callBack) {
-        dismissRootElementFromGlassPane();
+        Platform.runLater(() -> {
+            dismissRootElementFromGlassPane();
 
-        FadeTransition dialogBackgroundPaneFadeOutTransition = animationService.createFadeOutTransition(mainViewController.getDialogOverLayer());
-        FadeTransition dialogRootFadeOutTransition = animationService.createFadeOutTransition(mainViewController.getGlassPane());
+            FadeTransition dialogBackgroundPaneFadeOutTransition = animationService.createFadeOutTransition(mainViewController.getDialogOverLayer());
+            FadeTransition dialogRootFadeOutTransition = animationService.createFadeOutTransition(mainViewController.getGlassPane());
 
-        dialogRootFadeOutTransition.setOnFinished(event -> {
-            mainViewController.getGlassPane().setVisible(false);
-            mainViewController.getDialogOverLayer().setVisible(false);
-            mainViewController.getGlassPane().getChildren().clear();
+            dialogRootFadeOutTransition.setOnFinished(event -> {
+                mainViewController.getGlassPane().setVisible(false);
+                mainViewController.getDialogOverLayer().setVisible(false);
+                mainViewController.getGlassPane().getChildren().clear();
 
-            if (callBack != null) {
-                callBack.execute(event);
-            }
+                if (callBack != null) {
+                    callBack.execute(event);
+                }
+            });
+
+            SequentialTransition sequentialTransition = new SequentialTransition();
+            sequentialTransition.getChildren().addAll(dialogBackgroundPaneFadeOutTransition, dialogRootFadeOutTransition);
+            sequentialTransition.play();
         });
-
-        SequentialTransition sequentialTransition = new SequentialTransition();
-        sequentialTransition.getChildren().addAll(dialogBackgroundPaneFadeOutTransition, dialogRootFadeOutTransition);
-        sequentialTransition.play();
     }
 
     private void dismissRootElementFromGlassPane() {
         ObservableList<Node> elementsOnGlassPane = mainViewController.getGlassPane().getChildren();
         if (elementsOnGlassPane.size() > 0) {
-            animationService.createBounceOutTransition(elementsOnGlassPane.get(0)).play();
+            Platform.runLater(() -> {
+                animationService.createBounceOutTransition(elementsOnGlassPane.get(0)).play();
+            });
         }
     }
 
