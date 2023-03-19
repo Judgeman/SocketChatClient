@@ -13,12 +13,12 @@
          <children>
             <VBox styleClass="messageBoxBackgroundSystem">
                <children>
-                  <Label fx:id="nameTextLabel" text="Label" textFill="#727272">
+                  <Label fx:id="nameTextLabel" maxWidth="300.0" text="Label" textFill="#727272">
                      <font>
                         <Font size="10.0" />
                      </font>
                   </Label>
-                  <Label fx:id="messageTextLabel" text="Label">
+                  <Label fx:id="messageTextLabel" maxHeight="1.7976931348623157E308" maxWidth="300.0" text="Label" wrapText="true">
                      <font>
                         <Font size="14.0" />
                      </font>

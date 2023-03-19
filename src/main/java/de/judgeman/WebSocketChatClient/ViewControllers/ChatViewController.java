@@ -125,6 +125,16 @@ public class ChatViewController extends ViewController implements WebSocketRespo
 
     @Override
     public void handleNewMessage(Message message) {
+        String ownName = nameTextField.getText();
+        String friendName = nameOfFriendTextField.getText();
+
+        if (message.getSender() != null &&
+            !message.getSender().equals(ownName) &&
+            !message.getSender().equals(friendName)) {
+            showSystemMessage(String.format(languageService.getLocalizationText("messageFromAThirdPersonReceived"), message.getSender(), message.getText()));
+            return;
+        }
+
         String pathOfFXML = getRightMessageFXMLPath(message);
 
         ViewRootAndControllerPair pair = createMessageViewAndController(pathOfFXML);

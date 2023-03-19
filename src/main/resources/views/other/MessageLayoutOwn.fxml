@@ -6,16 +6,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.judgeman.WebSocketChatClient.ViewControllers.Other.MessageLayoutViewController">
+<AnchorPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.judgeman.WebSocketChatClient.ViewControllers.Other.MessageLayoutViewController">
    <children>
       <VBox styleClass="messageBoxBackgroundOwn" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
          <children>
-            <Label fx:id="nameTextLabel" text="Label" textFill="#cdcdcd">
+            <Label fx:id="nameTextLabel" maxWidth="300.0" text="Label" textFill="#cdcdcd">
                <font>
                   <Font size="10.0" />
                </font>
             </Label>
-            <Label fx:id="messageTextLabel" text="Label" textFill="WHITE">
+            <Label fx:id="messageTextLabel" maxHeight="1.7976931348623157E308" maxWidth="300.0" text="Label" textFill="WHITE" wrapText="true">
                <font>
                   <Font size="14.0" />
                </font>

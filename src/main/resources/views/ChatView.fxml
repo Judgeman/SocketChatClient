@@ -13,7 +13,7 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.judgeman.WebSocketChatClient.ViewControllers.ChatViewController">
    <children>
-      <BorderPane prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <bottom>
             <HBox alignment="CENTER" prefHeight="50.0" spacing="8.0" BorderPane.alignment="CENTER">
                <children>
@@ -26,7 +26,7 @@
             </HBox>
          </bottom>
          <center>
-            <ScrollPane fitToWidth="true" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <ScrollPane fitToWidth="true" pannable="true" BorderPane.alignment="CENTER">
                <content>
                   <VBox fx:id="messageVBox" alignment="CENTER" />
                </content>
