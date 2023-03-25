@@ -1,5 +1,6 @@
 package de.judgeman.WebSocketChatClient;
 
+import de.judgeman.WebSocketChatClient.HelperClasses.ViewRootAndControllerPair;
 import de.judgeman.WebSocketChatClient.Services.LanguageService;
 import de.judgeman.WebSocketChatClient.Services.ViewService;
 import de.judgeman.WebSocketChatClient.ViewControllers.MainViewController;
@@ -39,8 +40,12 @@ public class WebSocketChatClientApplication extends Application {
         languageService = springContext.getBean(LanguageService.class);
         viewService = springContext.getBean(ViewService.class);
 
-        root = viewService.getRootElementFromFXML(ViewService.FILE_PATH_MAIN_VIEW);
-        viewService.registerMainViewController(springContext.getBean(MainViewController.class));
+        ViewRootAndControllerPair pair = viewService.getRootAndViewControllerFromFXML(ViewService.FILE_PATH_MAIN_VIEW);
+        MainViewController mainViewController = (MainViewController) pair.getViewController();
+        viewService.registerMainViewController(mainViewController);
+        root = pair.getRoot();
+
+        mainViewController.showInitialView();
     }
 
     private void showStartUpErrorMessage(Exception ex) {

@@ -1,13 +1,11 @@
 package de.judgeman.WebSocketChatClient.ViewControllers;
 
-import de.judgeman.WebSocketChatClient.Services.LogService;
 import de.judgeman.WebSocketChatClient.Services.SettingService;
 import de.judgeman.WebSocketChatClient.Services.ViewService;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -16,8 +14,6 @@ import org.springframework.stereotype.Controller;
  */
 @Controller
 public class MainViewController extends ViewController {
-
-    private Logger logger = LogService.getLogger(this.getClass());
 
     @Autowired
     private ViewService viewService;
@@ -52,18 +48,16 @@ public class MainViewController extends ViewController {
         this.dialogOverLayer = dialogOverLayer;
     }
 
-    @FXML
-    public void initialize() {
-        showChatView();
+    public void showInitialView() {
+        showUserSetupView();
     }
 
-    private void showChatView() {
-        Parent root = viewService.getRootElementFromFXML(ViewService.FILE_PATH_CHAT_VIEW);
+    private void showUserSetupView() {
+        viewService.showView(ViewService.FILE_PATH_USER_SETUP);
+    }
+
+    public void showNewView(Parent root) {
         removeLastVisibleView();
-        showNewView(root);
-    }
-
-    private void showNewView(Parent root) {
         contentPane.getChildren().add(root);
     }
 

@@ -27,14 +27,16 @@ public class ViewService {
     public static final String FILE_PATH_MAIN_VIEW = "/views/MainView.fxml";
     public static final String FILE_PATH_SPLASH_SCREEN = "/SplashScreen.fxml";
     public static final String FILE_PATH_CHAT_VIEW = "/views/ChatView.fxml";
+    public static final String FILE_PATH_USER_SETUP = "/views/UserSetupView.fxml";
 
     public static final String FILE_PATH_MESSAGE_LAYOUT_OWN = "/views/other/MessageLayoutOwn.fxml";
     public static final String FILE_PATH_MESSAGE_LAYOUT_OTHER = "/views/other/MessageLayoutOther.fxml";
-    public static final String FILE_PATH_MESSAGE_LAYOUT_SYSTEM = "/views/other/MessageLayoutSystem.fxml";
+
+    public static final String FILE_PATH_CHAT_VIEW_FRIEND_SELECTION_ENTRY = "/views/other/FriendSelectionEntry.fxml";
 
     public static final String FILE_DIALOG_INFORMATION = "/views/dialogViews/informationDialog.fxml";
 
-    public static final double DEFAULT_WIDTH = 500;
+    public static final double DEFAULT_WIDTH = 800;
     public static final double DEFAULT_HEIGHT = 600;
 
     public static final double DEFAULT_WIDTH_SPLASH_SCREEN = 500;
@@ -89,10 +91,6 @@ public class ViewService {
         }
 
         return null;
-    }
-
-    public Parent getRootElementFromFXML(String fxmlPath) {
-        return getRootAndViewControllerFromFXML(fxmlPath).getRoot();
     }
 
     public void registerPrimaryStage(Stage primaryStage) {
@@ -170,4 +168,9 @@ public class ViewService {
         }
     }
 
+    public ViewController showView(String filePathChatView) {
+        ViewRootAndControllerPair pair = getRootAndViewControllerFromFXML(filePathChatView);
+        mainViewController.showNewView(pair.getRoot());
+        return pair.getViewController();
+    }
 }

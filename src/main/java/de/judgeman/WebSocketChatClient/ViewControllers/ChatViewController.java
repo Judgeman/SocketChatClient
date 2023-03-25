@@ -8,11 +8,12 @@ import de.judgeman.WebSocketChatClient.Services.LogService;
 import de.judgeman.WebSocketChatClient.Services.ViewService;
 import de.judgeman.WebSocketChatClient.Services.WebSocketService;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
+import de.judgeman.WebSocketChatClient.ViewControllers.Other.FriendSelectionEntryViewController;
 import de.judgeman.WebSocketChatClient.ViewControllers.Other.MessageLayoutViewController;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
@@ -20,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Controller
 public class ChatViewController extends ViewController implements WebSocketResponseHandler {
@@ -36,54 +40,76 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     private WebSocketStompClient stompClient;
     private StompSession session;
 
-    @FXML
-    private TextField nameTextField;
+    private String ownName;
+    private String selectedNameOfFriend;
+
+    HashMap<String, FriendSelectionEntryViewController> friendsEntryViewControllers;
+
     @FXML
     private TextField nameOfFriendTextField;
     @FXML
     private TextField messageTextField;
     @FXML
-    private Button connectionButton;
-    @FXML
-    private Button disconnectButton;
-    @FXML
     private VBox messageVBox;
     @FXML
-    private ChoiceBox<ReconnectionTime> reconnectChoiceBox;
+    private Label chatViewConnectionStateConnectedLabel;
+    @FXML
+    private Label chatViewConnectionStateDisconnectedLabel;
+    @FXML
+    private Label friendNameLabel;
+    @FXML
+    private VBox friendListVBox;
+    @FXML
+    private Button messageSendButton;
 
     @FXML
     private void initialize() {
-        initReconnectionChoiceBox();
+        friendsEntryViewControllers = new HashMap<>();
     }
 
-    private void initReconnectionChoiceBox() {
-        ReconnectionTime off = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnectOff"), -1);
-        ReconnectionTime oneSecond = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect1Sec"), 1);
-        ReconnectionTime fiveSeconds = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect5Sec"), 5);
-        ReconnectionTime tenSeconds = new ReconnectionTime(languageService.getLocalizationText("chatViewReconnect10Sec"), 10);
-
-        reconnectChoiceBox.getItems().add(off);
-        reconnectChoiceBox.getItems().add(oneSecond);
-        reconnectChoiceBox.getItems().add(fiveSeconds);
-        reconnectChoiceBox.getItems().add(tenSeconds);
-
-        reconnectChoiceBox.setValue(off);
+    public void setUserName(String name) {
+        this.ownName = name;
+        connect();
     }
 
     @FXML
-    private void connect() {
-        if (session != null) {
-            logger.info("Already connected");
-            showSystemMessage(languageService.getLocalizationText("connectionAlreadyExists"));
+    private void plusButtonClicked() {
+        String nameOfFriend = nameOfFriendTextField.getText();
+        if (nameOfFriend.isEmpty()) {
+            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),
+                                              languageService.getLocalizationText("chatViewFriendNameEmpty"));
+
             return;
         }
 
-        String name = nameTextField.getText();
-        String nameOfFriend = nameOfFriendTextField.getText();
+        if (friendIsInFriendList(nameOfFriend)) {
+            logger.info("Friend already exists - ignore");
+            return;
+        }
 
-        if (name.isEmpty() || nameOfFriend.isEmpty()) {
-            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),
-                                              languageService.getLocalizationText("textFieldsMustBeFilledOut"));
+        addNewFriend(nameOfFriend);
+        nameOfFriendTextField.clear();
+    }
+
+    private void addNewFriend(String nameOfNewFriend) {
+        if(friendsEntryViewControllers.containsKey(nameOfNewFriend)) {
+            logger.info("Friend already in the list - ignore");
+            return;
+        }
+
+        ViewRootAndControllerPair pair = viewService.getRootAndViewControllerFromFXML(ViewService.FILE_PATH_CHAT_VIEW_FRIEND_SELECTION_ENTRY);
+        FriendSelectionEntryViewController friendSelectionEntryViewController = (FriendSelectionEntryViewController) pair.getViewController();
+        Platform.runLater(() -> {
+            friendSelectionEntryViewController.setName(nameOfNewFriend);
+            friendListVBox.getChildren().add(pair.getRoot());
+        });
+
+        friendsEntryViewControllers.put(nameOfNewFriend, friendSelectionEntryViewController);
+    }
+
+    private void connect() {
+        if (session != null) {
+            logger.info("Already connected");
             return;
         }
 
@@ -91,50 +117,64 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         if (stompClient == null) {
             stompClient = webSocketService.createNewStompClient();
         }
-        session = webSocketService.connect(stompClient, name, this);
-
-        if (session != null && session.isConnected()) {
-            changeConnectionControls(false);
-        }
+        session = webSocketService.connect(stompClient, ownName, this);
     }
 
-    @FXML
+    private void changeConnectionStateToConnected() {
+        hideAllConnectionStates();
+        chatViewConnectionStateConnectedLabel.setVisible(true);
+    }
+
+    private void changeConnectionStateToDisconnected() {
+        hideAllConnectionStates();
+        chatViewConnectionStateDisconnectedLabel.setVisible(true);
+    }
+
+    private void hideAllConnectionStates() {
+        chatViewConnectionStateConnectedLabel.setVisible(false);
+        chatViewConnectionStateDisconnectedLabel.setVisible(false);
+    }
+
     private void clearChat() {
         messageVBox.getChildren().clear();
-    }
-
-    @FXML
-    private void disconnectButtonClicked() {
-        disconnect();
-        showSystemMessage(languageService.getLocalizationText("connectionDisconnected"));
     }
 
     private void disconnect() {
         webSocketService.disconnect(session);
         session = null;
-
-        changeConnectionControls(true);
-    }
-
-    private void changeConnectionControls(boolean enable) {
-        nameTextField.setDisable(!enable);
-        nameOfFriendTextField.setDisable(!enable);
-        connectionButton.setDisable(!enable);
-        disconnectButton.setDisable(enable);
+        changeConnectionStateToDisconnected();
     }
 
     @Override
     public void handleNewMessage(Message message) {
-        String ownName = nameTextField.getText();
-        String friendName = nameOfFriendTextField.getText();
+        String friendName = getFriendsNameFromMessage(message);
 
         if (message.getSender() != null &&
-            !message.getSender().equals(ownName) &&
-            !message.getSender().equals(friendName)) {
-            showSystemMessage(String.format(languageService.getLocalizationText("messageFromAThirdPersonReceived"), message.getSender(), message.getText()));
+            !friendName.equals(selectedNameOfFriend)) {
+            boolean messageFromMyself = message.getSender().equals(ownName);
+
+            if (friendIsInFriendList(message.getSender())) {
+                Platform.runLater(() -> friendsEntryViewControllers.get(friendName).addNewMessage(message, !messageFromMyself));
+            } else {
+                addNewFriend(friendName);
+                Platform.runLater(() -> friendsEntryViewControllers.get(friendName).addNewMessage(message, !messageFromMyself));
+            }
             return;
         }
 
+        Platform.runLater(() -> friendsEntryViewControllers.get(friendName).addNewMessage(message, false));
+        showMessage(message);
+    }
+
+    private String getFriendsNameFromMessage(Message message) {
+        if (message.getSender().equals(ownName)) {
+            return message.getReceiver();
+        }
+
+        return message.getSender();
+    }
+
+    private void showMessage(Message message) {
         String pathOfFXML = getRightMessageFXMLPath(message);
 
         ViewRootAndControllerPair pair = createMessageViewAndController(pathOfFXML);
@@ -144,13 +184,17 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         });
     }
 
+    private boolean friendIsInFriendList(String nameOfFriend) {
+        return friendsEntryViewControllers.containsKey(nameOfFriend);
+    }
+
     @Override
     public void afterConnectionEstablished() {
-        showSystemMessage(languageService.getLocalizationText("connectionEstablished"));
+        changeConnectionStateToConnected();
     }
 
     private String getRightMessageFXMLPath(Message message) {
-        if (message.getSender() != null && message.getSender().equals(nameTextField.getText())) {
+        if (message.getSender() != null && message.getSender().equals(ownName)) {
             return ViewService.FILE_PATH_MESSAGE_LAYOUT_OWN;
         }
 
@@ -159,45 +203,27 @@ public class ChatViewController extends ViewController implements WebSocketRespo
 
     @Override
     public void handleError(Throwable throwable) {
-        showSystemMessage(String.format(languageService.getLocalizationText("errorWithDetails"), throwable.getMessage()));
         disconnect();
-
         tryToReconnect();
     }
 
     private void tryToReconnect() {
-        int secondsToReconnect = reconnectChoiceBox.getValue().value;
+        int secondsToReconnect = webSocketService.getReconnectionTryInSeconds();
         if (secondsToReconnect < 0) {
             logger.info("Auto reconnection is off");
             return;
         }
 
-        showSystemMessage(String.format(languageService.getLocalizationText("chatViewReconnectIn"), secondsToReconnect));
         logger.info("Reconnect in seconds: " + secondsToReconnect);
         Thread reconnectThread = new Thread(() -> {
             try {
                 Thread.sleep(1000L * secondsToReconnect);
-                showSystemMessage(languageService.getLocalizationText("chatViewReconnectTry"));
                 connect();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
         reconnectThread.start();
-    }
-
-    private void showSystemMessage(String messageText) {
-        ViewRootAndControllerPair pair = createMessageViewAndController(ViewService.FILE_PATH_MESSAGE_LAYOUT_SYSTEM);
-
-        Platform.runLater(() -> {
-            Message message = new Message();
-            message.setSender(languageService.getLocalizationText("system"));
-            message.setReceiver(nameTextField.getText());
-            message.setText(messageText);
-
-            ((MessageLayoutViewController) pair.getViewController()).setMessage(message);
-            messageVBox.getChildren().add(pair.getRoot());
-        });
     }
 
     private ViewRootAndControllerPair createMessageViewAndController(String fxmlPath) {
@@ -221,13 +247,20 @@ public class ChatViewController extends ViewController implements WebSocketRespo
             return false;
         }
 
+        if (selectedNameOfFriend == null) {
+            logger.info("No Friend selected");
+            viewService.showInformationDialog(languageService.getLocalizationText("errorTitle"),
+                                              languageService.getLocalizationText("chatViewNoFriendSelected"));
+            return false;
+        }
+
         if (messageTextField.getText().isEmpty()) {
             logger.info("TextField is empty - ignore");
             return false;
         }
 
         try {
-            webSocketService.sendMessage(session, nameTextField.getText(), nameOfFriendTextField.getText(), messageTextField.getText());
+            webSocketService.sendMessage(session, ownName, selectedNameOfFriend, messageTextField.getText());
             return true;
         } catch (Exception ex) {
             handleError(ex);
@@ -236,34 +269,23 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         return false;
     }
 
-    private class ReconnectionTime {
-        private String displayText;
-        private int value = -1;
+    public void showFriendChat(String name, ArrayList<Message> messages) {
+        clearChat();
+        friendNameLabel.setText(name);
+        selectedNameOfFriend = name;
 
-        public ReconnectionTime(String displayText, int value) {
-            this.displayText = displayText;
-            this.value = value;
-        }
+        showMessages(messages);
+        activateMessageEntryAndButton();
+    }
 
-        public String getDisplayText() {
-            return displayText;
-        }
+    private void activateMessageEntryAndButton() {
+        messageTextField.setDisable(false);
+        messageSendButton.setDisable(false);
+    }
 
-        public void setDisplayText(String displayText) {
-            this.displayText = displayText;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return displayText;
+    private void showMessages(ArrayList<Message> messages) {
+        for (Message message : messages) {
+            showMessage(message);
         }
     }
 }

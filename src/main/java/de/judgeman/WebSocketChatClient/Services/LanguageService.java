@@ -39,11 +39,7 @@ public class LanguageService {
     }
 
     public String getLocalizationText(String key) {
-        return tryConvertISOStringInUTF8(currentUsedResourceBundle.getString(key));
-    }
-
-    private String tryConvertISOStringInUTF8(String value) {
-        return new String(value.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+        return currentUsedResourceBundle.getString(key);
     }
 
     public Locale getLastUsedOrDefaultLanguage() {

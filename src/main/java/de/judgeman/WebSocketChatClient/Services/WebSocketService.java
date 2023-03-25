@@ -44,8 +44,14 @@ public class WebSocketService {
     private int serverConnectingTimeout;
     @Value("${messageServer.messageSendingEndPoint}")
     private String mesaageSendingEndpoint;
+    @Value("${messageServer.reconnectionTryInSeconds:10}")
+    private int reconnectionTryInSeconds;
 
     private final Logger logger = LogService.getLogger(this.getClass());
+
+    public int getReconnectionTryInSeconds() {
+        return reconnectionTryInSeconds;
+    }
 
     public WebSocketStompClient createNewStompClient() {
         List<Transport> transports = new ArrayList<>();
