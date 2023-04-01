@@ -1,6 +1,7 @@
 package de.judgeman.WebSocketChatClient.ViewControllers;
 
 import de.judgeman.WebSocketChatClient.Services.LanguageService;
+import de.judgeman.WebSocketChatClient.Services.SettingService;
 import de.judgeman.WebSocketChatClient.Services.ViewService;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
 import javafx.fxml.FXML;
@@ -18,6 +19,8 @@ public class UserSetupViewController extends ViewController {
     private ViewService viewService;
     @Autowired
     private LanguageService languageService;
+    @Autowired
+    private SettingService settingService;
 
     @FXML
     private TextField nameTextField;
@@ -30,6 +33,7 @@ public class UserSetupViewController extends ViewController {
             return;
         }
 
+        settingService.saveSetting(SettingService.CURRENT_LOGIN_NAME, nameTextField.getText());
         ChatViewController chatViewController = (ChatViewController) viewService.showView(ViewService.FILE_PATH_CHAT_VIEW);
         chatViewController.setUserName(nameTextField.getText());
     }

@@ -3,10 +3,7 @@ package de.judgeman.WebSocketChatClient.ViewControllers;
 import de.judgeman.WebSocketChatClient.HelperClasses.ViewRootAndControllerPair;
 import de.judgeman.WebSocketChatClient.Interfaces.WebSocketResponseHandler;
 import de.judgeman.WebSocketChatClient.Model.Message;
-import de.judgeman.WebSocketChatClient.Services.LanguageService;
-import de.judgeman.WebSocketChatClient.Services.LogService;
-import de.judgeman.WebSocketChatClient.Services.ViewService;
-import de.judgeman.WebSocketChatClient.Services.WebSocketService;
+import de.judgeman.WebSocketChatClient.Services.*;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
 import de.judgeman.WebSocketChatClient.ViewControllers.Other.FriendSelectionEntryViewController;
 import de.judgeman.WebSocketChatClient.ViewControllers.Other.MessageLayoutViewController;
@@ -33,9 +30,11 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     @Autowired
     private WebSocketService webSocketService;
     @Autowired
-    private ViewService viewService;
-    @Autowired
     private LanguageService languageService;
+    @Autowired
+    private SettingService settingService;
+    @Autowired
+    private ViewService viewService;
 
     private WebSocketStompClient stompClient;
     private StompSession session;
@@ -61,6 +60,8 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     private VBox friendListVBox;
     @FXML
     private Button messageSendButton;
+    @FXML
+    private Button logoutButton;
 
     @FXML
     private void initialize() {
@@ -68,7 +69,10 @@ public class ChatViewController extends ViewController implements WebSocketRespo
     }
 
     public void setUserName(String name) {
-        this.ownName = name;
+        ownName = name;
+
+        logoutButton.setText(String.format(languageService.getLocalizationText("chatViewLogoutButton"), ownName));
+
         connect();
     }
 
@@ -89,6 +93,18 @@ public class ChatViewController extends ViewController implements WebSocketRespo
 
         addNewFriend(nameOfFriend);
         nameOfFriendTextField.clear();
+    }
+
+    @FXML
+    private void logout() {
+        disconnect();
+        clearUserData();
+
+        viewService.showView(ViewService.FILE_PATH_USER_SETUP);
+    }
+
+    private void clearUserData() {
+        settingService.deleteSetting(SettingService.CURRENT_LOGIN_NAME);
     }
 
     private void addNewFriend(String nameOfNewFriend) {

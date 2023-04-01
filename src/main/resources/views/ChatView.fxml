@@ -32,20 +32,29 @@
                               <VBox fx:id="friendListVBox" />
                            </content>
                         </ScrollPane>
-                        <HBox alignment="CENTER" minHeight="30.0" spacing="5.0">
+                        <VBox alignment="CENTER">
                            <children>
-                              <Label text="%chatViewConnectionStateLabel" />
-                              <AnchorPane HBox.hgrow="ALWAYS">
+                              <HBox alignment="CENTER" minHeight="30.0" spacing="5.0">
                                  <children>
-                                    <Label fx:id="chatViewConnectionStateDisconnectedLabel" text="%chatViewConnectionStateDisconnected" textFill="#da0000" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                    <Label fx:id="chatViewConnectionStateConnectedLabel" text="%chatViewConnectionStateConnected" textFill="#1ca83a" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    <Label text="%chatViewConnectionStateLabel" />
+                                    <AnchorPane HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Label fx:id="chatViewConnectionStateDisconnectedLabel" text="%chatViewConnectionStateDisconnected" textFill="#da0000" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                          <Label fx:id="chatViewConnectionStateConnectedLabel" text="%chatViewConnectionStateConnected" textFill="#1ca83a" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                       </children>
+                                    </AnchorPane>
                                  </children>
-                              </AnchorPane>
+                                 <VBox.margin>
+                                    <Insets left="5.0" right="5.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <Button fx:id="logoutButton" mnemonicParsing="false" onAction="#logout" text="Logout">
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" top="5.0" />
+                                 </VBox.margin>
+                              </Button>
                            </children>
-                           <VBox.margin>
-                              <Insets left="5.0" right="5.0" />
-                           </VBox.margin>
-                        </HBox>
+                        </VBox>
                      </children>
                   </VBox>
                </children>

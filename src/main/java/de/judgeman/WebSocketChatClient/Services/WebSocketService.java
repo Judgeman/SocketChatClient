@@ -43,7 +43,7 @@ public class WebSocketService {
     @Value("${messageServer.connectingTimeout:10}")
     private int serverConnectingTimeout;
     @Value("${messageServer.messageSendingEndPoint}")
-    private String mesaageSendingEndpoint;
+    private String messageSendingEndpoint;
     @Value("${messageServer.reconnectionTryInSeconds:10}")
     private int reconnectionTryInSeconds;
 
@@ -124,7 +124,7 @@ public class WebSocketService {
         String serverRegisterAddress = String.format(serverBaseAddressPattern, serverBaseAddress, serverPort, registerPath);
         logger.info("Use server register address: " + serverRegisterAddress);
 
-        return stompClient.connect( serverRegisterAddress, new StompSessionHandler() {
+        return stompClient.connect(serverRegisterAddress, new StompSessionHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
                 return null;
@@ -194,7 +194,7 @@ public class WebSocketService {
         message.setReceiver(nameOfFriend);
         message.setText(messageText);
 
-        session.send(mesaageSendingEndpoint, message);
+        session.send(messageSendingEndpoint, message);
 
         logger.info("Message sent from " + name + " to " + nameOfFriend + ": " + message.getText());
     }

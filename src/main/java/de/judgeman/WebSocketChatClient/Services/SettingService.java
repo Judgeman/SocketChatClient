@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class SettingService {
 
     public static final String LANGUAGE_ENTRY_KEY = "currentLanguage";
-    public static final String USE_DIALOG_ENTRY_KEY = "useDialog";
+    public static final String CURRENT_LOGIN_NAME = "currentLoginName";
 
     @Autowired
     private SettingEntryRepository settingEntryRepository;

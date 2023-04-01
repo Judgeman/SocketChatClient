@@ -1,5 +1,6 @@
 package de.judgeman.WebSocketChatClient.ViewControllers;
 
+import de.judgeman.WebSocketChatClient.Model.SettingEntry;
 import de.judgeman.WebSocketChatClient.Services.SettingService;
 import de.judgeman.WebSocketChatClient.Services.ViewService;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
@@ -49,7 +50,18 @@ public class MainViewController extends ViewController {
     }
 
     public void showInitialView() {
+        String currentUsername = settingService.loadSetting(SettingService.CURRENT_LOGIN_NAME);
+        if (currentUsername != null && !currentUsername.isEmpty()) {
+            showChatView(currentUsername);
+            return;
+        }
+
         showUserSetupView();
+    }
+
+    private void showChatView(String currentUsername) {
+        ChatViewController chatViewController = (ChatViewController) viewService.showView(ViewService.FILE_PATH_CHAT_VIEW);
+        chatViewController.setUserName(currentUsername);
     }
 
     private void showUserSetupView() {
@@ -62,6 +74,6 @@ public class MainViewController extends ViewController {
     }
 
     private void removeLastVisibleView() {
-        contentPane.getChildren().removeAll();
+        contentPane.getChildren().clear();
     }
 }
