@@ -1,6 +1,6 @@
 package de.judgeman.WebSocketChatClient.ViewControllers.Other;
 
-import de.judgeman.WebSocketChatClient.Model.Message;
+import de.judgeman.WebSocketChatClient.Model.ChatUser;
 import de.judgeman.WebSocketChatClient.ViewControllers.Abstract.ViewController;
 import de.judgeman.WebSocketChatClient.ViewControllers.ChatViewController;
 import javafx.fxml.FXML;
@@ -21,12 +21,11 @@ public class FriendSelectionEntryViewController extends ViewController {
     @Autowired
     private ChatViewController chatViewController;
 
-    private final ArrayList<Message> messages;
+    private ChatUser chatUser;
 
     private int newMessages;
 
     public FriendSelectionEntryViewController() {
-        messages = new ArrayList<>();
         newMessages = 0;
     }
 
@@ -45,25 +44,17 @@ public class FriendSelectionEntryViewController extends ViewController {
 
     @FXML
     private void entryClicked() {
-        chatViewController.showFriendChat(getName(), messages);
+        chatViewController.showFriendChat(getName());
         setNewMessagesAsSeen();
     }
 
-    public void addNewMessage(Message message, boolean showAsNewMessage) {
-        messages.add(message);
-
-        if (showAsNewMessage) {
-            newMessages++;
-            showNewMessagesReceived();
-        }
+    public void addMessageBadge() {
+        newMessages++;
+        showNewMessagesReceived();
     }
 
     private void showNewMessagesReceived() {
         newMessagesLabel.setText("" + newMessages);
-    }
-
-    public ArrayList<Message> getMessages() {
-        return messages;
     }
 
     public void setNewMessagesAsSeen() {

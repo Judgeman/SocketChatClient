@@ -26,7 +26,7 @@ public class LogService {
     private static PrintStream logFilePrintStream = createNewLogFileAndPrintStream();
 
     public static final String LOG_DIRECTORY_NAME = "logs";
-    public static final String LOG_NAME_PREFIX = "h2SpringFx_";
+    public static final String LOG_NAME_PREFIX = "SocketChatClient_";
 
     public static void tieSystemOutAndErrToFileLogging() {
         System.setOut(createLoggingProxy(System.out));

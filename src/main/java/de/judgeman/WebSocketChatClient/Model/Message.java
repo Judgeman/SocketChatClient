@@ -1,7 +1,12 @@
 package de.judgeman.WebSocketChatClient.Model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Message {
 
+    @Id
     private long id;
 
     private String sender;
