@@ -142,9 +142,14 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         ViewRootAndControllerPair pair = viewService.getRootAndViewControllerFromFXML(ViewService.FILE_PATH_CHAT_VIEW_FRIEND_SELECTION_ENTRY);
         FriendSelectionEntryViewController friendSelectionEntryViewController = (FriendSelectionEntryViewController) pair.getViewController();
         friendsEntryViewControllers.put(nameOfNewFriend, friendSelectionEntryViewController);
+        ChatUser chatUser = chatUserService.loadChatUser(nameOfNewFriend);
+        List<Message> newMessages = messageService.loadAllNewMessages(chatUser);
+        Message lastMessage = messageService.loadLastMessage(chatUser);
 
         Platform.runLater(() -> {
-            friendSelectionEntryViewController.setName(nameOfNewFriend);
+            friendSelectionEntryViewController.setChatUser(chatUser);
+            friendSelectionEntryViewController.setLastMessage(lastMessage);
+            friendSelectionEntryViewController.setNewMessages(newMessages);
             friendListVBox.getChildren().add(pair.getRoot());
         });
     }
@@ -197,20 +202,25 @@ public class ChatViewController extends ViewController implements WebSocketRespo
             addNewFriend(nameOfFriend);
         }
 
-        messageService.saveNewMessage(chatUser, message);
-
         if (message.getSender() != null &&
             !nameOfFriend.equals(selectedNameOfFriend)) {
             boolean messageFromMyself = message.getSender().equals(ownName);
 
             if (!messageFromMyself) {
-                Platform.runLater(() -> friendsEntryViewControllers.get(nameOfFriend).addMessageBadge());
+                Platform.runLater(() -> friendsEntryViewControllers.get(nameOfFriend).addNewMessage(message));
+            } else {
+                Platform.runLater(() -> friendsEntryViewControllers.get(nameOfFriend).setLastMessage(message));
             }
+
+            messageService.saveNewMessage(chatUser, message);
 
             return;
         }
 
         showMessage(message);
+        message.setSeen(true);
+        messageService.saveNewMessage(chatUser, message);
+        Platform.runLater(() -> friendsEntryViewControllers.get(nameOfFriend).setLastMessage(message));
     }
 
     private String getFriendsNameFromMessage(Message message) {
@@ -316,14 +326,14 @@ public class ChatViewController extends ViewController implements WebSocketRespo
         return false;
     }
 
-    public void showFriendChat(String name) {
+    public void showFriendChat(ChatUser chatUser) {
         clearChat();
-        friendNameLabel.setText(name);
-        selectedNameOfFriend = name;
+        friendNameLabel.setText(chatUser.getName());
+        selectedNameOfFriend = chatUser.getName();
 
-        ChatUser chatUser = chatUserService.loadChatUser(name);
         showMessages(chatUserService.loadChatMessages(chatUser));
         activateMessageEntryAndButton();
+        Platform.runLater(() -> friendsEntryViewControllers.get(chatUser.getName()).setNewMessagesAsSeen());
     }
 
     private void activateMessageEntryAndButton() {

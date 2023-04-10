@@ -2,6 +2,7 @@ package de.judgeman.WebSocketChatClient.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 
 @Entity
 public class Message {
@@ -12,6 +13,10 @@ public class Message {
     private String sender;
     private String receiver;
     private String text;
+
+    private Date date;
+
+    private boolean seen;
 
     public long getId() {
         return id;
@@ -43,5 +48,21 @@ public class Message {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public void setSeen(boolean seen) {
+        this.seen = seen;
     }
 }

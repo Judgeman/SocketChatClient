@@ -12,4 +12,8 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
     List<Message> findAllBySenderOrReceiver(String sender, String receiver);
 
+    Message findTop1BySenderOrReceiverOrderByDateDesc(String sender, String receiver);
+
+    List<Message> findBySenderAndSeenOrReceiverAndSeen(String sender, boolean seenSender, String receiver, boolean seenReceiver);
+
 }
